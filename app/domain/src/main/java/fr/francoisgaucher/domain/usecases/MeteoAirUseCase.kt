@@ -1,8 +1,10 @@
 package fr.francoisgaucher.domain.usecases
 
+import dagger.hilt.android.scopes.ViewModelScoped
 import fr.francoisgaucher.domain.api.Result
 import fr.francoisgaucher.domain.model.AirQuality
 import fr.francoisgaucher.domain.repositories.MeteoAirRepository
+import javax.inject.Inject
 
 abstract class MeteoAirSimpleUseCase(protected val meteoAirRepository: MeteoAirRepository) {
     abstract suspend operator fun invoke()
@@ -20,7 +22,8 @@ abstract class MeteoAirCompletetUseCase<T, K>(protected val meteoAirRepository: 
     abstract suspend operator fun invoke(param: T): K
 }
 
-class MeteoAirGetCurrentByCoordinateUseCase(meteoAirRepository: MeteoAirRepository) : MeteoAirCompletetUseCase<Pair<Double, Double>, UseCase<AirQuality>>(meteoAirRepository) {
+@ViewModelScoped
+class MeteoAirGetCurrentByCoordinateUseCase @Inject constructor(meteoAirRepository: MeteoAirRepository) : MeteoAirCompletetUseCase<Pair<Double, Double>, UseCase<AirQuality>>(meteoAirRepository) {
     override suspend operator fun invoke(param: Pair<Double, Double>): UseCase<AirQuality> {
         return meteoAirRepository.getCurrentByCoordonate(param).let { result ->
             when (result) {

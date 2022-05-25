@@ -1,5 +1,8 @@
 package fr.francoisgaucher.data.repositories.meteo
 
+import android.content.Context
+import com.google.gson.Gson
+import dagger.hilt.android.qualifiers.ApplicationContext
 import fr.francoisgaucher.data.repositories.ApiService
 import fr.francoisgaucher.data.repositories.modal.AirQualityData
 import fr.francoisgaucher.domain.api.ApiException
@@ -9,7 +12,8 @@ import fr.francoisgaucher.domain.model.AirQuality
 import fr.francoisgaucher.domain.repositories.MeteoAirRepository
 import javax.inject.Inject
 
-class AirRepositoryImpl @Inject constructor() : MeteoAirRepository, ApiService() {
+class AirRepositoryMockedImpl @Inject constructor(@ApplicationContext
+                                                  val context: Context) : MeteoAirRepository, ApiService() {
 
     @Inject
     lateinit var meteoAirService: AirMeteoService
@@ -21,12 +25,10 @@ class AirRepositoryImpl @Inject constructor() : MeteoAirRepository, ApiService()
     // ####################################################################
 
     override suspend fun getCurrentByCoordonate(coordonate: Pair<Double, Double>): Result<AirQuality> {
-        val result: Result<AirQualityData> = apiCall(call = {
-            meteoAirService.getCurrentByCoordonate(
-                lat = coordonate.first,
-                lng = coordonate.second
-            )
-        })
+        val result: Result<AirQualityData> = Result.Success(
+            Gson().fromJson(context.assets.open("meteo_air_quality_latest_latlng_200.json").bufferedReader().readText(),
+            AirQualityData::class.java
+        ))
         return when (result) {
             is Result.Error -> result
             is Result.Success -> Result.Success(result.data.convertTo()[0])
